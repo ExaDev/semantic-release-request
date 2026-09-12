@@ -1,0 +1,2 @@
+minimumReleaseAgeExclude:
+  - '@exadev/eslint-config@2.11.0'

@@ -1,0 +1,74 @@
+{
+  "name": "semantic-release-request",
+  "version": "0.0.0-semantically-released",
+  "description": "semantic-release plugin that stages a release as a pull request instead of pushing it directly to the release branch",
+  "type": "module",
+  "sideEffects": false,
+  "license": "MIT",
+  "packageManager": "pnpm@11.6.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "semantic-release",
+    "semantic-release-plugin",
+    "pull-request",
+    "release"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ExaDev/semantic-release-request.git"
+  },
+  "peerDependencies": {
+    "semantic-release": ">=21.0.0"
+  },
+  "dependencies": {
+    "@octokit/rest": "^22.0.0",
+    "execa": "^10.0.0"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.2.1",
+    "@commitlint/config-conventional": "^21.2.0",
+    "@exadev/eslint-config": "^2.11.0",
+    "@semantic-release/changelog": "^7.0.0",
+    "@types/node": "^24.9.2",
+    "@vitest/coverage-v8": "^4.1.10",
+    "eslint": "^10.8.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.2.0",
+    "publint": "^0.3.21",
+    "semantic-release": "^25.0.8",
+    "tsdown": "^0.22.13",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.10"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "lint": "eslint . --fix --cache --max-warnings 0",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "prepublishOnly": "pnpm run lint && pnpm run typecheck && pnpm run test && tsdown && publint",
+    "prepare": "husky",
+    "release": "semantic-release"
+  }
+}
