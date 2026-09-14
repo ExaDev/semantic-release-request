@@ -1,2 +1,4 @@
 minimumReleaseAgeExclude:
   - '@exadev/eslint-config@2.11.0'
+  - '@exadev/eslint-config@2.12.1'
+saveExact: true
