@@ -71,12 +71,12 @@ describe("prepare", () => {
 
     expect(gitOperations.checkoutNewBranch).toHaveBeenCalledWith("release/1.2.3");
     expect(gitOperations.stage).toHaveBeenCalledWith(["CHANGELOG.md", "package.json"]);
-    expect(gitOperations.commit).toHaveBeenCalledWith("chore(release): 1.2.3 [skip ci]");
+    expect(gitOperations.commit).toHaveBeenCalledWith("chore(release): 1.2.3");
     expect(gitOperations.push).toHaveBeenCalledWith("release/1.2.3");
     expect(vi.mocked(pullRequestOperations.openOrUpdate)).toHaveBeenCalledWith({
       branch: "release/1.2.3",
       baseBranch: "main",
-      title: "chore(release): 1.2.3 [skip ci]",
+      title: "chore(release): 1.2.3",
       body: context.nextRelease.notes,
       labels: [],
     });

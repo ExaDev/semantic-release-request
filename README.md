@@ -39,7 +39,7 @@ const config: Options = {
 export default config;
 ```
 
-Requires a `GITHUB_TOKEN` or `GH_TOKEN` environment variable with permission to push a branch and open pull requests on the repository (the default `GITHUB_TOKEN` in GitHub Actions is sufficient, since the pushed branch is never the protected one).
+Requires a `GITHUB_TOKEN` or `GH_TOKEN` environment variable with permission to push a branch and open pull requests on the repository (the default `GITHUB_TOKEN` in GitHub Actions is sufficient to push and open the pull request, since the pushed branch is never the protected one). GitHub does not start workflows for pushes made with that token, so a repository that requires status checks on the release pull request pushes the branch with a deploy key instead (`ssh-key` on `actions/checkout`) and runs CI on `release/**` pushes.
 
 ## Options
 
@@ -47,7 +47,7 @@ Requires a `GITHUB_TOKEN` or `GH_TOKEN` environment variable with permission to 
 | --------------- | ------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | `assets`        | `["CHANGELOG.md", "package.json"]`          | Files to stage into the release commit.                                                   |
 | `branch`        | `"release/${version}"`                      | The branch pushed to and PR'd from. `${version}` is replaced with the release version.    |
-| `commitMessage` | `"chore(release): ${version} [skip ci]"`    | The commit message and PR title. `${version}` and `${notes}` are both available.          |
+| `commitMessage` | `"chore(release): ${version}"`              | The commit message and PR title. `${version}` and `${notes}` are both available.          |
 | `labels`        | `[]`                                        | Labels applied when a new pull request is opened. Never removed from an already-open one. |
 
 ## License
