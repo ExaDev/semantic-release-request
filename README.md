@@ -41,9 +41,9 @@ export default config;
 
 Requires a `GITHUB_TOKEN` or `GH_TOKEN` environment variable with permission to push a branch and open pull requests on the repository (the default `GITHUB_TOKEN` in GitHub Actions is sufficient to push and open the pull request, since the pushed branch is never the protected one). GitHub does not start workflows for pushes made with that token, so a repository that requires status checks on the release pull request pushes the branch with a deploy key instead (`ssh-key` on `actions/checkout`) and runs CI on `release/**` pushes.
 
-## Tagging and publishing
+## Tagging
 
-The plugin ends the run in semantic-release's dry-run mode once it has handled a release, so semantic-release neither tags nor runs publish plugins from the staging run. A staged release has no tag until the pull request merges, and whatever publishes (a separate job triggered by the merge, for instance) creates the tag on the merged commit.
+semantic-release creates and pushes a release's tag straight after `prepare`, before any publish step, so a staged release would otherwise carry a tag that is not on the base branch until its pull request merges, and a restaged release would fail with "tag already exists". The plugin therefore removes that tag again in its `publish` step and clears one left by an earlier run in `verifyRelease`, never touching a tag the base branch contains. List the plugin after every other publish plugin; whatever publishes after the pull request merges creates the tag on the merged commit.
 
 ## Options
 

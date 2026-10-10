@@ -23,14 +23,11 @@ export interface PluginConfig {
 /**
  * The subset of a semantic-release plugin's own `pluginConfig`/`context` parameters this plugin reads. Narrower than semantic-release's own (untyped) `Context`, since this plugin only ever uses these fields -- see semantic-release's own plugin documentation for the full shape a real invocation provides.
  */
-export interface PrepareContext {
+export interface ReleaseContext {
   readonly cwd: string;
   readonly env: Readonly<Record<string, string | undefined>>;
   readonly branch: { readonly name: string };
-  readonly nextRelease: { readonly version: string; readonly notes: string };
-  /**
-   * semantic-release's own options object. `dryRun` is written back by `prepare` once a release is staged, so the run ends without tagging or publishing.
-   */
-  readonly options: { readonly repositoryUrl: string; dryRun?: boolean };
+  readonly nextRelease: { readonly version: string; readonly notes: string; readonly gitTag: string };
+  readonly options: { readonly repositoryUrl: string };
   readonly logger: { readonly log: (message: string) => void };
 }
