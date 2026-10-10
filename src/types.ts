@@ -11,7 +11,7 @@ export interface PluginConfig {
    */
   readonly branch?: string;
   /**
-   * The release commit's message, and the pull request's title. `${version}` and `${notes}` are replaced with `nextRelease.version` and `nextRelease.notes`. Defaults to `"chore(release): ${version} [skip ci]"`.
+   * The release commit's message, and the pull request's title. `${version}` and `${notes}` are replaced with `nextRelease.version` and `nextRelease.notes`. Defaults to `"chore(release): ${version}"`. Avoid `[skip ci]`: GitHub skips `push` and `pull_request` workflows for a head commit that contains it, so the release pull request would never receive its required checks.
    */
   readonly commitMessage?: string;
   /**

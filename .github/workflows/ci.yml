@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, "release/**"]
   pull_request:
     types: [opened, synchronize, reopened, closed]
   workflow_dispatch:
@@ -92,7 +92,8 @@ jobs:
   stage-release:
     name: Stage release
     needs: [commitlint, lint, typecheck, test]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    # The merged release commit lands on main as a push of its own; staging again from it would open a release for the release.
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'chore(release):')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -104,6 +105,8 @@ jobs:
         with:
           # semantic-release analyses the full commit history since the last release.
           fetch-depth: 0
+          # Pushes made with GITHUB_TOKEN never start workflows, so the release branch is pushed over SSH with a deploy key and its CI runs like any other branch's.
+          ssh-key: ${{ secrets.RELEASE_DEPLOY_KEY }}
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:

@@ -6,7 +6,7 @@ import type { PluginConfig, PrepareContext } from "./types.js";
 
 const DEFAULT_ASSETS = ["CHANGELOG.md", "package.json"];
 const DEFAULT_BRANCH = "release/${version}";
-const DEFAULT_COMMIT_MESSAGE = "chore(release): ${version} [skip ci]";
+const DEFAULT_COMMIT_MESSAGE = "chore(release): ${version}";
 
 function readGithubToken(env: PrepareContext["env"]): string | undefined {
   const token = env["GITHUB_TOKEN"] ?? env["GH_TOKEN"];
