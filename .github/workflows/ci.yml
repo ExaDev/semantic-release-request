@@ -148,8 +148,15 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag "v${{ steps.version.outputs.version }}"
-          git push origin "v${{ steps.version.outputs.version }}"
+          tag="v${{ steps.version.outputs.version }}"
+          # A re-run after a failed publish step finds the tag from the first attempt; it must name this commit, and is then left alone.
+          if git ls-remote --exit-code --tags origin "refs/tags/${tag}" > /dev/null; then
+            git fetch --quiet origin "refs/tags/${tag}:refs/tags/${tag}"
+            test "$(git rev-parse "${tag}^{commit}")" = "$(git rev-parse HEAD)"
+          else
+            git tag "${tag}"
+            git push origin "${tag}"
+          fi
       - name: Upgrade npm for OIDC trusted publishing (needs npm CLI >=11.5.1)
         run: npm install -g npm@latest
       - run: pnpm publish --access public --no-git-checks
