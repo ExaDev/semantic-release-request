@@ -22,5 +22,6 @@ export function parseRepositoryUrl(repositoryUrl: string): RepositoryCoordinates
       }
     }
   }
+
   return undefined;
 }

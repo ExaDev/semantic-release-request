@@ -40,6 +40,7 @@ export function createPullRequestOperations(
           title,
           body,
         });
+
         return { number: updated.data.number, htmlUrl: updated.data.html_url };
       }
 

@@ -29,6 +29,7 @@ export function createGitOperations(cwd: string): GitOperations {
     },
     async hasStagedChanges() {
       const result = await execa("git", ["diff", "--cached", "--quiet"], { cwd, reject: false });
+
       return result.exitCode !== 0;
     },
   };

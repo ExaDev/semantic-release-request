@@ -10,6 +10,7 @@ const DEFAULT_COMMIT_MESSAGE = "chore(release): ${version} [skip ci]";
 
 function readGithubToken(env: PrepareContext["env"]): string | undefined {
   const token = env["GITHUB_TOKEN"] ?? env["GH_TOKEN"];
+
   return token === undefined || token.length === 0 ? undefined : token;
 }
 
@@ -63,6 +64,7 @@ export async function prepare(pluginConfig: PluginConfig, context: PrepareContex
     context.logger.log(
       `No changes to stage for ${branch} -- ${assets.join(", ")} already match this release.`,
     );
+
     return;
   }
 
