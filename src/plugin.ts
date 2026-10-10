@@ -56,6 +56,10 @@ export async function prepare(pluginConfig: PluginConfig, context: PrepareContex
     );
   }
 
+  // semantic-release tags and pushes the release right after `prepare`, but a release handled here only exists as a pull request, staged or already merged: the tag would name a commit that is not on the base branch and make every later staging run fail with "tag already exists". Dry-run mode is the one switch the core honours for skipping the tag, the push and every publish plugin, and it reads it after `prepare` returns.
+  const { options } = context;
+  options.dryRun = true;
+
   const git = createGitOperations(context.cwd);
   await git.checkoutNewBranch(branch);
   await git.stage(assets);

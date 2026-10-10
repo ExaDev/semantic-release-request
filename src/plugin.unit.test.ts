@@ -65,6 +65,13 @@ describe("prepare", () => {
     vi.mocked(gitOperations.hasStagedChanges).mockResolvedValue(true);
   });
 
+  it("ends the run in dry-run mode once a release is staged so no tag or publish follows", async () => {
+    const context = makeContext();
+    await prepare({}, context);
+
+    expect(context.options.dryRun).toBe(true);
+  });
+
   it("stages the default assets, commits, pushes, and opens a pull request", async () => {
     const context = makeContext();
     await prepare({}, context);
@@ -104,8 +111,10 @@ describe("prepare", () => {
   it("does nothing further when there are no staged changes", async () => {
     vi.mocked(gitOperations.hasStagedChanges).mockResolvedValue(false);
 
-    await prepare({}, makeContext());
+    const context = makeContext();
+    await prepare({}, context);
 
+    expect(context.options.dryRun).toBe(true);
     expect(gitOperations.commit).not.toHaveBeenCalled();
     expect(gitOperations.push).not.toHaveBeenCalled();
     expect(vi.mocked(pullRequestOperations.openOrUpdate)).not.toHaveBeenCalled();
