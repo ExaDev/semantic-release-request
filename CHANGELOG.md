@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/ExaDev/semantic-release-request/compare/v1.0.0...v1.0.1) (2026-10-10)
+
+
+### Bug Fixes
+
+* let a re-run of the publish job reuse the release tag ([88c6028](https://github.com/ExaDev/semantic-release-request/commit/88c6028e66dd6940329e0661e69a155ae7aca11f))
+
 # 1.0.0 (2026-10-10)
 
 
