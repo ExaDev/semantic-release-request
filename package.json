@@ -1,46 +1,7 @@
 {
   "name": "semantic-release-request",
-  "version": "0.0.0-semantically-released",
   "description": "semantic-release plugin that stages a release as a pull request instead of pushing it directly to the release branch",
-  "type": "module",
-  "sideEffects": false,
-  "license": "MIT",
-  "packageManager": "pnpm@12.4.1+sha512.2e81e399d73fe8390dab25e06aa788ab7a5908248d2f5a370f82b481147a6a7a367bf8048f9a6fdb6460f21a66f0542dedb8b94ca2c8723596741920b1656d4c",
-  "engines": {
-    "node": ">=20"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": {
-        "import": "./dist/index.d.ts",
-        "require": "./dist/index.d.cts"
-      },
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    }
-  },
-  "files": [
-    "dist"
-  ],
-  "keywords": [
-    "semantic-release",
-    "semantic-release-plugin",
-    "pull-request",
-    "release"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ExaDev/semantic-release-request.git"
-  },
-  "peerDependencies": {
-    "semantic-release": ">=21.0.0"
-  },
+  "version": "0.0.0-semantically-released",
   "dependencies": {
     "@octokit/rest": "^22.0.0",
     "execa": "^10.0.0"
@@ -61,14 +22,53 @@
     "typescript": "^6.0.3",
     "vitest": "^4.1.10"
   },
+  "engines": {
+    "node": ">=20"
+  },
+  "exports": {
+    ".": {
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "pull-request",
+    "release",
+    "semantic-release",
+    "semantic-release-plugin"
+  ],
+  "license": "MIT",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "packageManager": "pnpm@12.4.1+sha512.2e81e399d73fe8390dab25e06aa788ab7a5908248d2f5a370f82b481147a6a7a367bf8048f9a6fdb6460f21a66f0542dedb8b94ca2c8723596741920b1656d4c",
+  "peerDependencies": {
+    "semantic-release": ">=21.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ExaDev/semantic-release-request.git"
+  },
   "scripts": {
     "build": "tsdown",
     "lint": "eslint . --fix --cache --max-warnings 0",
-    "typecheck": "tsc -p tsconfig.json",
+    "prepare": "husky",
+    "prepublishOnly": "pnpm run lint && pnpm run typecheck && pnpm run test && tsdown && publint",
+    "release": "semantic-release",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "prepublishOnly": "pnpm run lint && pnpm run typecheck && pnpm run test && tsdown && publint",
-    "prepare": "husky",
-    "release": "semantic-release"
-  }
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "types": "./dist/index.d.ts"
 }
