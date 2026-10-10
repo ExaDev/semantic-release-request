@@ -28,6 +28,9 @@ export interface PrepareContext {
   readonly env: Readonly<Record<string, string | undefined>>;
   readonly branch: { readonly name: string };
   readonly nextRelease: { readonly version: string; readonly notes: string };
-  readonly options: { readonly repositoryUrl: string };
+  /**
+   * semantic-release's own options object. `dryRun` is written back by `prepare` once a release is staged, so the run ends without tagging or publishing.
+   */
+  readonly options: { readonly repositoryUrl: string; dryRun?: boolean };
   readonly logger: { readonly log: (message: string) => void };
 }
