@@ -2,13 +2,13 @@ import { createGitOperations } from "./git.js";
 import { parseRepositoryUrl } from "./parse-repository-url.js";
 import { createPullRequestOperations } from "./pull-request.js";
 import { renderTemplate } from "./template.js";
-import type { PluginConfig, PrepareContext } from "./types.js";
+import type { PluginConfig, ReleaseContext } from "./types.js";
 
 const DEFAULT_ASSETS = ["CHANGELOG.md", "package.json"];
 const DEFAULT_BRANCH = "release/${version}";
 const DEFAULT_COMMIT_MESSAGE = "chore(release): ${version}";
 
-function readGithubToken(env: PrepareContext["env"]): string | undefined {
+function readGithubToken(env: ReleaseContext["env"]): string | undefined {
   const token = env["GITHUB_TOKEN"] ?? env["GH_TOKEN"];
 
   return token === undefined || token.length === 0 ? undefined : token;
@@ -17,7 +17,7 @@ function readGithubToken(env: PrepareContext["env"]): string | undefined {
 /**
  * semantic-release's `verifyConditions` hook: fails fast if a GitHub token isn't available, rather than letting `prepare` fail later with a less obvious authentication error.
  */
-export function verifyConditions(_pluginConfig: PluginConfig, context: PrepareContext): void {
+export function verifyConditions(_pluginConfig: PluginConfig, context: ReleaseContext): void {
   if (readGithubToken(context.env) === undefined) {
     throw new Error(
       "semantic-release-request requires a GITHUB_TOKEN or GH_TOKEN environment variable to open pull requests.",
@@ -33,7 +33,7 @@ export function verifyConditions(_pluginConfig: PluginConfig, context: PrepareCo
 /**
  * semantic-release's `prepare` hook: stages the release commit onto a dedicated branch and opens (or updates) a pull request from it, instead of `@semantic-release/git`'s own behaviour of committing directly onto the release branch. Assumes an earlier plugin (typically `@semantic-release/changelog`) has already written whichever of `assets` need updating on disk; this plugin only stages, commits, pushes, and opens the pull request.
  */
-export async function prepare(pluginConfig: PluginConfig, context: PrepareContext): Promise<void> {
+export async function prepare(pluginConfig: PluginConfig, context: ReleaseContext): Promise<void> {
   const assets = pluginConfig.assets ?? DEFAULT_ASSETS;
   const branch = renderTemplate(pluginConfig.branch ?? DEFAULT_BRANCH, context.nextRelease);
   const commitMessage = renderTemplate(
@@ -55,10 +55,6 @@ export async function prepare(pluginConfig: PluginConfig, context: PrepareContex
       "semantic-release-request requires a GITHUB_TOKEN or GH_TOKEN environment variable to open pull requests.",
     );
   }
-
-  // semantic-release tags and pushes the release right after `prepare`, but a release handled here only exists as a pull request, staged or already merged: the tag would name a commit that is not on the base branch and make every later staging run fail with "tag already exists". Dry-run mode is the one switch the core honours for skipping the tag, the push and every publish plugin, and it reads it after `prepare` returns.
-  const { options } = context;
-  options.dryRun = true;
 
   const git = createGitOperations(context.cwd);
   await git.checkoutNewBranch(branch);
@@ -87,4 +83,35 @@ export async function prepare(pluginConfig: PluginConfig, context: PrepareContex
   context.logger.log(
     `Staged release ${context.nextRelease.version} as pull request #${String(pullRequest.number)} (${pullRequest.htmlUrl}).`,
   );
+}
+
+/**
+ * semantic-release creates and pushes a release's tag straight after `prepare`, before any publish step. A staged release has no tag until its pull request merges (whatever publishes afterwards tags the merged commit), and a leftover tag names a commit that is not on the base branch and makes every later run fail with "tag already exists". This step removes a tag left by an earlier run so a restaged release can be tagged by the core again; it never touches a tag the base branch already contains.
+ * @throws if the tag exists on the remote and removing it fails.
+ */
+export async function verifyRelease(_pluginConfig: PluginConfig, context: ReleaseContext): Promise<void> {
+  const git = createGitOperations(context.cwd);
+  const tag = context.nextRelease.gitTag;
+
+  if (!(await git.tagExists(tag))) {
+    return;
+  }
+  if (await git.isTagReachableFrom(tag, `origin/${context.branch.name}`)) {
+    return;
+  }
+
+  context.logger.log(`Removing ${tag}, left by an earlier run, which is not on ${context.branch.name}.`);
+  await git.deleteTag(tag);
+}
+
+/**
+ * Runs after the core has created and pushed the tag for the release staged by `prepare`, and removes it again: the release is only a pull request at this point, so the tag belongs to whatever publishes once it merges. Order this plugin after every other publish plugin, since none of them can rely on the tag existing once it has run.
+ * @throws if removing the tag from the remote fails.
+ */
+export async function publish(_pluginConfig: PluginConfig, context: ReleaseContext): Promise<void> {
+  const git = createGitOperations(context.cwd);
+  const tag = context.nextRelease.gitTag;
+
+  context.logger.log(`Removing ${tag}: the release is staged as a pull request, not published.`);
+  await git.deleteTag(tag);
 }

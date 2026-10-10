@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GitOperations } from "./git.js";
 import type { PullRequestOperations } from "./pull-request.js";
-import type { PrepareContext } from "./types.js";
+import type { ReleaseContext } from "./types.js";
 
 const gitOperations: GitOperations = {
   checkoutNewBranch: vi.fn(async () => Promise.resolve(undefined)),
@@ -9,6 +9,9 @@ const gitOperations: GitOperations = {
   commit: vi.fn(async () => Promise.resolve(undefined)),
   push: vi.fn(async () => Promise.resolve(undefined)),
   hasStagedChanges: vi.fn(async () => Promise.resolve(true)),
+  tagExists: vi.fn(async () => Promise.resolve(false)),
+  isTagReachableFrom: vi.fn(async () => Promise.resolve(false)),
+  deleteTag: vi.fn(async () => Promise.resolve(undefined)),
 };
 
 const pullRequestOperations: PullRequestOperations = {
@@ -25,14 +28,14 @@ vi.mock("./pull-request.js", () => ({
   createPullRequestOperations: vi.fn(() => pullRequestOperations),
 }));
 
-const { prepare, verifyConditions } = await import("./plugin.js");
+const { prepare, publish, verifyConditions, verifyRelease } = await import("./plugin.js");
 
-function makeContext(overrides: Partial<PrepareContext> = {}): PrepareContext {
+function makeContext(overrides: Partial<ReleaseContext> = {}): ReleaseContext {
   return {
     cwd: "/repo",
     env: { GITHUB_TOKEN: "token" },
     branch: { name: "main" },
-    nextRelease: { version: "1.2.3", notes: "## 1.2.3\n\n- a change" },
+    nextRelease: { version: "1.2.3", notes: "## 1.2.3\n\n- a change", gitTag: "v1.2.3" },
     options: { repositoryUrl: "https://github.com/ExaDev/eslint-config.git" },
     logger: { log: vi.fn(() => undefined) },
     ...overrides,
@@ -63,13 +66,8 @@ describe("prepare", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(gitOperations.hasStagedChanges).mockResolvedValue(true);
-  });
-
-  it("ends the run in dry-run mode once a release is staged so no tag or publish follows", async () => {
-    const context = makeContext();
-    await prepare({}, context);
-
-    expect(context.options.dryRun).toBe(true);
+    vi.mocked(gitOperations.tagExists).mockResolvedValue(false);
+    vi.mocked(gitOperations.isTagReachableFrom).mockResolvedValue(false);
   });
 
   it("stages the default assets, commits, pushes, and opens a pull request", async () => {
@@ -111,10 +109,8 @@ describe("prepare", () => {
   it("does nothing further when there are no staged changes", async () => {
     vi.mocked(gitOperations.hasStagedChanges).mockResolvedValue(false);
 
-    const context = makeContext();
-    await prepare({}, context);
+    await prepare({}, makeContext());
 
-    expect(context.options.dryRun).toBe(true);
     expect(gitOperations.commit).not.toHaveBeenCalled();
     expect(gitOperations.push).not.toHaveBeenCalled();
     expect(vi.mocked(pullRequestOperations.openOrUpdate)).not.toHaveBeenCalled();
@@ -128,5 +124,43 @@ describe("prepare", () => {
     await expect(
       prepare({}, makeContext({ options: { repositoryUrl: "https://gitlab.com/o/r" } })),
     ).rejects.toThrow(/only supports GitHub/);
+  });
+
+  describe("verifyRelease", () => {
+    it("removes a tag left by an earlier run that the base branch does not contain", async () => {
+      vi.mocked(gitOperations.tagExists).mockResolvedValue(true);
+      vi.mocked(gitOperations.isTagReachableFrom).mockResolvedValue(false);
+
+      await verifyRelease({}, makeContext());
+
+      expect(gitOperations.isTagReachableFrom).toHaveBeenCalledWith("v1.2.3", "origin/main");
+      expect(gitOperations.deleteTag).toHaveBeenCalledWith("v1.2.3");
+    });
+
+    it("keeps a tag the base branch already contains", async () => {
+      vi.mocked(gitOperations.tagExists).mockResolvedValue(true);
+      vi.mocked(gitOperations.isTagReachableFrom).mockResolvedValue(true);
+
+      await verifyRelease({}, makeContext());
+
+      expect(gitOperations.deleteTag).not.toHaveBeenCalled();
+    });
+
+    it("does nothing when the tag does not exist", async () => {
+      vi.mocked(gitOperations.tagExists).mockResolvedValue(false);
+
+      await verifyRelease({}, makeContext());
+
+      expect(gitOperations.isTagReachableFrom).not.toHaveBeenCalled();
+      expect(gitOperations.deleteTag).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("publish", () => {
+    it("removes the tag the core created for the staged release", async () => {
+      await publish({}, makeContext());
+
+      expect(gitOperations.deleteTag).toHaveBeenCalledWith("v1.2.3");
+    });
   });
 });
