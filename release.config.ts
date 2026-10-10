@@ -48,6 +48,8 @@ const config: Options = {
       },
     ],
     "@semantic-release/changelog",
+    // Bumps package.json to the release version without publishing, so the staged release commit carries it and the publish job reads it from the merged tree.
+    ["@semantic-release/npm", { npmPublish: false }],
     ["./dist/index.js", { labels: ["release"] }],
   ],
 };
