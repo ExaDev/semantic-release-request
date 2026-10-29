@@ -1,6 +1,6 @@
 # semantic-release-request
 
-[![npm](https://img.shields.io/badge/npm-CB3837?logo=npm&logoColor=white)](https://www.npmjs.com/package/semantic-release-request) [![npm version](https://img.shields.io/npm/v/semantic-release-request)](https://www.npmjs.com/package/semantic-release-request) [![CI](https://img.shields.io/github/actions/workflow/status/ExaDev/semantic-release-request/ci.yml?branch=main)](https://github.com/ExaDev/semantic-release-request/actions)
+[![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)](https://github.com/ExaDev/semantic-release-request) [![npm](https://img.shields.io/badge/npm-CB3837?logo=npm&logoColor=white)](https://www.npmjs.com/package/semantic-release-request) [![Release](https://img.shields.io/github/v/release/ExaDev/semantic-release-request)](https://github.com/ExaDev/semantic-release-request/releases/latest) [![CI](https://img.shields.io/github/actions/workflow/status/ExaDev/semantic-release-request/ci.yml?branch=main)](https://github.com/ExaDev/semantic-release-request/actions)
 
 A [semantic-release](https://semantic-release.gitbook.io/) plugin that stages a release as a pull request instead of pushing it directly to the release branch.
 
